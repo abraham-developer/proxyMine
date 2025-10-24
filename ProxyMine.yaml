@@ -7,7 +7,7 @@ services:
       - admin
     working_dir: /app
     command: >
-      sh -c "npm install -g ws@8.13.0 &&
+      sh -c "npm install ws@8.13.0 &&
              node /app/proxy.js"
     volumes:
       - ./proxy.js:/app/proxy.js:ro
