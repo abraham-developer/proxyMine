@@ -1,4 +1,7 @@
-eaglercraft_proxy:
+version: "3.7"
+
+services:
+  eaglercraft-proxy:
     image: node:18-alpine
     networks:
       - admin
@@ -9,7 +12,7 @@ eaglercraft_proxy:
     volumes:
       - ./proxy.js:/app/proxy.js:ro
     environment:
-      - MINECRAFT_HOST=minecraft_java
+      - MINECRAFT_HOST=minecraft_minecraft_java
       - MINECRAFT_PORT=25565
       - WS_PORT=8080
     deploy:
@@ -20,15 +23,20 @@ eaglercraft_proxy:
           - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.eagler_ws.rule=Host(`minecraft.cubeark.dev`)
-        - traefik.http.routers.eagler_ws.entrypoints=websecure
-        - traefik.http.routers.eagler_ws.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.eagler_ws.service=eagler_ws
-        - traefik.http.services.eagler_ws.loadbalancer.server.port=8080
-        - traefik.http.services.eagler_ws.loadbalancer.passHostHeader=1
+        - traefik.http.routers.eagler-ws.rule=Host(`minecraft.cubeark.dev`)
+        - traefik.http.routers.eagler-ws.entrypoints=websecure
+        - traefik.http.routers.eagler-ws.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.eagler-ws.service=eagler-ws
+        - traefik.http.services.eagler-ws.loadbalancer.server.port=8080
+        - traefik.http.services.eagler-ws.loadbalancer.passHostHeader=1
       resources:
         limits:
           cpus: "0.5"
           memory: 512M
       restart_policy:
         condition: any
+
+networks:
+  admin:
+    external: true
+    name: admin
