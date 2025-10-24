@@ -1,0 +1,22 @@
+const WebSocket = require('ws');
+const net = require('net');
+const WS_PORT = process.env.WS_PORT || 8080;
+const MC_HOST = process.env.MINECRAFT_HOST || 'minecraft_java';
+const MC_PORT = process.env.MINECRAFT_PORT || 25565;
+const wss = new WebSocket.Server({ port: WS_PORT });
+console.log(`[EAGLERCRAFT PROXY] Iniciado en puerto ${WS_PORT}`);
+console.log(`[EAGLERCRAFT PROXY] Apuntando a Minecraft: ${MC_HOST}:${MC_PORT}`);
+wss.on('connection', (ws, req) => {
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    console.log(`[WS] Nueva conexión desde: ${clientIp}`);
+    const mcSocket = net.createConnection({host: MC_HOST, port: MC_PORT});
+    mcSocket.on('connect', () => {console.log(`[TCP] Conectado a ${MC_HOST}:${MC_PORT}`);});
+    ws.on('message', (data) => {try {mcSocket.write(Buffer.isBuffer(data) ? data : Buffer.from(data));} catch (err) {console.error('[WS->TCP]', err.message);}});
+    mcSocket.on('data', (data) => {try {if (ws.readyState === WebSocket.OPEN) {ws.send(data);}} catch (err) {console.error('[TCP->WS]', err.message);}});
+    ws.on('error', (err) => {console.error('[WS]', err.message); mcSocket.destroy();});
+    ws.on('close', () => {console.log(`[WS] Cerrado: ${clientIp}`); mcSocket.destroy();});
+    mcSocket.on('error', (err) => {console.error('[TCP]', err.message); ws.close();});
+    mcSocket.on('close', () => {console.log('[TCP] Cerrado'); ws.close();});
+});
+wss.on('error', (err) => {console.error('[SERVER]', err.message);});
+process.on('SIGTERM', () => {console.log('[SERVER] Cerrando...'); wss.close(() => {process.exit(0);});});
