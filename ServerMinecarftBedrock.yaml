@@ -1,0 +1,53 @@
+version: "3.7"
+services:
+  minecraft_java:
+    image: itzg/minecraft-server:latest
+    networks:
+      - admin
+    environment:
+      EULA: "TRUE"
+      VERSION: "1.21.10"
+      TYPE: "VANILLA"
+      SERVER_NAME: "minecraft.cubeark.dev"
+      MOTD: "Servidor CubeArk Java 1.21.10"
+      DIFFICULTY: "normal"
+      GAMEMODE: "creative"
+      ONLINE_MODE: "false"
+      MAX_PLAYERS: "20"
+      MEMORY: "2G"
+      INIT_MEMORY: "1G"
+      MAX_MEMORY: "3G"
+      ENABLE_RCON: "true"
+      RCON_PORT: "25575"
+      RCON_PASSWORD: "cubeark2024"
+      SERVER_PORT: "25565"
+      OVERRIDE_OPS: "true"              # ← Permite sobrescribir ops
+      OPS_PERMISSION_LEVEL: "4"         # ← Nivel máximo de permisos (4 = total)
+      ENABLE_COMMAND_BLOCK: "true"      # ← Opcional: habilita command blocks
+      SPAWN_PROTECTION: "0"             # ← Opcional: sin protección de spawn
+    volumes:
+      - minecraft_java_data:/data
+    ports:
+      - "25565:25565"
+      - "25575:25575"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4096M
+      restart_policy:
+        condition: any
+
+volumes:
+  minecraft_java_data:
+    external: false
+
+networks:
+  admin:
+    external: true
+    name: admin
